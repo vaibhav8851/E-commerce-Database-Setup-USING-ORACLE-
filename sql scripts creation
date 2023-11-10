@@ -1,0 +1,163 @@
+CRETING SCRIPT FOR PROJECT ON DATE 8TH SEPT.
+
+** created schema MYDB in that creating tablespace and table.
+USER_DATA: This tablespace can store user-related data, such as customer information, profiles, and preferences.
+
+SQL> CREATE TABLESPACE userdata
+  2      DATAFILE 'C:\db_home\WINDOWS.X64_193000_db_home\d_files\userdata.dbf'
+  3      SIZE 500M
+  4      AUTOEXTEND ON NEXT 100M
+  5      MAXSIZE UNLIMITED;
+
+Tablespace created.
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+SQL> CREATE TABLE customer (
+  2    CustomerID NUMBER,
+  3    FirstName VARCHAR2(50),
+  4    LastName VARCHAR2(50),
+  5    Email VARCHAR2(100),
+  6    Phone VARCHAR2(20)
+  7  )
+  8  PARTITION BY HASH (CustomerID)
+  9  PARTITIONS 4  -- You can adjust the number of partitions as needed
+ 10  TABLESPACE userdata;
+
+Table created.
+
+SQL> BEGIN
+  2    FOR i IN 1..10 LOOP
+  3      INSERT INTO customer (CustomerID, FirstName, LastName, Email, Phone)
+  4      VALUES (i, 'First_Name_' || i, 'Last_Name_' || i, 'email' || i || '@example.com', '123-456-789' || i);
+  5    END LOOP;
+  6    COMMIT;
+  7  END;
+  8  /
+
+PL/SQL procedure successfully completed.
+
+SQL>
+
+creating order table 
+CREATE TABLE Orders (
+  OrderID NUMBER PRIMARY KEY,
+  CustomerID NUMBER NOT NULL,
+  OrderDate DATE NOT NULL,
+  TotalAmount NUMBER(10, 2) NOT NULL,
+  Status VARCHAR2(50) NOT NULL,
+  -- Add additional columns as needed
+  CONSTRAINT fk_customer FOREIGN KEY (CustomerID) REFERENCES customer(CustomerID),
+  CONSTRAINT chk_status CHECK (Status IN ('Pending', 'Processing', 'Shipped', 'Delivered'))
+);
+
+BEGIN
+  -- Insert sample order data
+  INSERT INTO Orders (OrderID, CustomerID, OrderDate, TotalAmount, Status)
+  VALUES (1, 6, TO_DATE('2023-09-10', 'YYYY-MM-DD'), 799.99, 'Processing'); -- Order for CustomerID 6
+  
+  INSERT INTO Orders (OrderID, CustomerID, OrderDate, TotalAmount, Status)
+  VALUES (2, 2, TO_DATE('2023-09-11', 'YYYY-MM-DD'), 1299.99, 'Shipped'); -- Order for CustomerID 2
+  
+  INSERT INTO Orders (OrderID, CustomerID, OrderDate, TotalAmount, Status)
+  VALUES (3, 9, TO_DATE('2023-09-12', 'YYYY-MM-DD'), 499.99, 'Processing'); -- Order for CustomerID 9
+  
+  INSERT INTO Orders (OrderID, CustomerID, OrderDate, TotalAmount, Status)
+  VALUES (4, 10, TO_DATE('2023-09-13', 'YYYY-MM-DD'), 199.99, 'Shipped'); -- Order for CustomerID 10
+  
+  INSERT INTO Orders (OrderID, CustomerID, OrderDate, TotalAmount, Status)
+  VALUES (5, 4, TO_DATE('2023-09-14', 'YYYY-MM-DD'), 49.99, 'Delivered'); -- Order for CustomerID 4
+  
+  INSERT INTO Orders (OrderID, CustomerID, OrderDate, TotalAmount, Status)
+  VALUES (6, 3, TO_DATE('2023-09-15', 'YYYY-MM-DD'), 19.99, 'Delivered'); -- Order for CustomerID 3
+  
+  INSERT INTO Orders (OrderID, CustomerID, OrderDate, TotalAmount, Status)
+  VALUES (7, 6, TO_DATE('2023-09-16', 'YYYY-MM-DD'), 59.99, 'Processing'); -- Order for CustomerID 6
+  
+  INSERT INTO Orders (OrderID, CustomerID, OrderDate, TotalAmount, Status)
+  VALUES (8, 5, TO_DATE('2023-09-17', 'YYYY-MM-DD'), 14.99, 'Shipped'); -- Order for CustomerID 5
+  
+  INSERT INTO Orders (OrderID, CustomerID, OrderDate, TotalAmount, Status)
+  VALUES (9, 7, TO_DATE('2023-09-18', 'YYYY-MM-DD'), 9.99, 'Processing'); -- Order for CustomerID 7
+  
+  INSERT INTO Orders (OrderID, CustomerID, OrderDate, TotalAmount, Status)
+  VALUES (10, 8, TO_DATE('2023-09-19', 'YYYY-MM-DD'), 199.99, 'Shipped'); -- Order for CustomerID 8
+
+  COMMIT;
+END;
+/
+
+
+creating orderitem table 
+
+SQL> CREATE TABLE OrderItem (
+  2    OrderItemID NUMBER PRIMARY KEY,
+  3    OrderID NUMBER,
+  4    ProductID NUMBER,
+  5    Quantity NUMBER,
+  6    Subtotal NUMBER,
+  7    CONSTRAINT fk_orderitem_order FOREIGN KEY (OrderID) REFERENCES Orders(OrderID),
+  8    CONSTRAINT fk_orderitem_product FOREIGN KEY (ProductID) REFERENCES Products(ProductID),
+  9    CONSTRAINT chk_quantity CHECK (Quantity >= 0),
+ 10    CONSTRAINT chk_subtotal CHECK (Subtotal >= 0)
+ 11  );
+
+Table created.
+
+BEGIN
+  -- Row 1
+  INSERT INTO OrderItem (OrderItemID, OrderID, ProductID, Quantity, Subtotal)
+  VALUES (1, 1, 1, 2, 1599.98);
+
+  -- Row 2
+  INSERT INTO OrderItem (OrderItemID, OrderID, ProductID, Quantity, Subtotal)
+  VALUES (2, 2, 2, 1, 1299.99);
+
+  -- Row 3
+  INSERT INTO OrderItem (OrderItemID, OrderID, ProductID, Quantity, Subtotal)
+  VALUES (3, 3, 3, 3, 1499.97);
+
+  -- Row 4
+  INSERT INTO OrderItem (OrderItemID, OrderID, ProductID, Quantity, Subtotal)
+  VALUES (4, 4, 4, 2, 399.98);
+
+  -- Row 5
+  INSERT INTO OrderItem (OrderItemID, OrderID, ProductID, Quantity, Subtotal)
+  VALUES (5, 5, 5, 2, 399.98);
+
+  -- Row 6
+  INSERT INTO OrderItem (OrderItemID, OrderID, ProductID, Quantity, Subtotal)
+  VALUES (6, 6, 6, 1, 19.99);
+
+  -- Row 7
+  INSERT INTO OrderItem (OrderItemID, OrderID, ProductID, Quantity, Subtotal)
+  VALUES (7, 7, 7, 2, 19.98);
+
+  -- Row 8
+  INSERT INTO OrderItem (OrderItemID, OrderID, ProductID, Quantity, Subtotal)
+  VALUES (8, 8, 8, 3, 44.97);
+
+  -- Row 9
+  INSERT INTO OrderItem (OrderItemID, OrderID, ProductID, Quantity, Subtotal)
+  VALUES (9, 9, 9, 1, 199.99);
+
+  -- Row 10
+  INSERT INTO OrderItem (OrderItemID, OrderID, ProductID, Quantity, Subtotal)
+  VALUES (10, 10, 10, 4, 799.96);
+
+  COMMIT;
+END;
+/
+
+CREATING •	Create DBA and application users with appropriate privileges.
+
+CREATE USER  IDENTIFIED BY <admin_password>
+DEFAULT TABLESPACE USERDATA
+QUOTA UNLIMITED ON USERDATA;
+
+-- Grant necessary privileges to the admin user (adjust privileges as needed)
+SCENERIOES 
+
+
+
+
